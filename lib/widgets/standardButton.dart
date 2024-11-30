@@ -8,7 +8,7 @@ class StandardButton extends StatelessWidget {
   const StandardButton({
     super.key,
     required this.icon,
-    required this.onPressed, 
+    required this.onPressed,
     required this.selected,
   });
 
@@ -23,7 +23,8 @@ class StandardButton extends StatelessWidget {
         }
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: selected? Color.fromARGB(255, 31, 73, 32) : Colors.green,
+        backgroundColor:
+            selected ? const Color.fromARGB(255, 31, 73, 32) : Colors.green,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(2),
         ),
