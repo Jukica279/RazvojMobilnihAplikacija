@@ -1,3 +1,4 @@
+import 'package:dailyflow/database/databaseValueGenerator.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -12,18 +13,23 @@ class DatabaseHelper {
     _database = await _initDB('recipe_database.db');
     return _database!;
   }
-
+  
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(
+    final db = await openDatabase(
       path,
       version: 1,
       onCreate: _createDB,
     );
-  }
 
+    // Populate database if empty
+    final databaseValueGenerator = DatabaseValueGenerator();
+    await databaseValueGenerator.populateDatabaseIfEmpty(db);
+
+    return db;
+  }
   Future<void> _createDB(Database db, int version) async {
     // User Table
     await db.execute('''
