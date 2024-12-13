@@ -13,7 +13,7 @@ class DatabaseHelper {
     _database = await _initDB('recipe_database.db');
     return _database!;
   }
-  
+
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
@@ -30,6 +30,7 @@ class DatabaseHelper {
 
     return db;
   }
+
   Future<void> _createDB(Database db, int version) async {
     // User Table
     await db.execute('''
@@ -156,16 +157,11 @@ class DatabaseHelper {
     final db = await database;
     await db.transaction((txn) async {
       // First delete related recipe ingredients
-      await txn.delete('RecipeIngredient', 
-        where: 'recipeId = ?', 
-        whereArgs: [recipeId]
-      );
-      
+      await txn.delete('RecipeIngredient',
+          where: 'recipeId = ?', whereArgs: [recipeId]);
+
       // Then delete the recipe
-      await txn.delete('Recipe', 
-        where: 'recipeId = ?', 
-        whereArgs: [recipeId]
-      );
+      await txn.delete('Recipe', where: 'recipeId = ?', whereArgs: [recipeId]);
     });
   }
 
@@ -183,10 +179,8 @@ class DatabaseHelper {
 
   Future<void> deleteIngredient(int ingredientId) async {
     final db = await database;
-    await db.delete('Ingredient', 
-      where: 'ingredientId = ?', 
-      whereArgs: [ingredientId]
-    );
+    await db.delete('Ingredient',
+        where: 'ingredientId = ?', whereArgs: [ingredientId]);
   }
 
   // Comment Management Functions
@@ -207,9 +201,14 @@ class DatabaseHelper {
 
   Future<void> deleteComment(int commentId) async {
     final db = await database;
-    await db.delete('Comment', 
-      where: 'commentId = ?', 
-      whereArgs: [commentId]
+    await db.delete('Comment', where: 'commentId = ?', whereArgs: [commentId]);
+  }
+
+  Future<List<Map<String, dynamic>>> getAllRecipes() async {
+    final db = await database;
+    return await db.query(
+      'Recipe',
+      columns: ['recipeId', 'recipeName', 'recipeDescription', 'recipeTags'],
     );
   }
 }
