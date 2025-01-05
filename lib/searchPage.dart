@@ -2,7 +2,6 @@ import 'package:dailyflow/database/database.dart';
 import 'package:dailyflow/widgets/search/searchedRecepieWidget.dart';
 import 'package:dailyflow/widgets/search/searchedUserWidget.dart';
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:dailyflow/widgets/navigationBar.dart';
 
 class SearchPage extends StatefulWidget {
@@ -14,9 +13,9 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
-  String _searchType = 'Recipes';
+  String _searchType = 'Recipes'; // Default search type
   List<dynamic> _searchResults = [];
-  final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
 
   final List<String> _searchTypeOptions = ['Recipes', 'Users'];
 
@@ -28,26 +27,16 @@ class _SearchPageState extends State<SearchPage> {
       return;
     }
 
-    final db = await _databaseHelper.database;
-    
     try {
       if (_searchType == 'Recipes') {
-        final results = await db.query(
-          'Recipe', 
-          where: 'recipeName LIKE ?', 
-          whereArgs: ['%$query%']
-        );
-        
+        // Fetch recipes from the database
+        List<Recipe> results = await _databaseHelper.fetchRecipes();
         setState(() {
           _searchResults = results;
         });
-      } else {
-        final results = await db.query(
-          'User', 
-          where: 'username LIKE ?', 
-          whereArgs: ['%$query%']
-        );
-        
+      } else if (_searchType == 'Users') {
+        // Fetch users from the database
+        List<User> results = await _databaseHelper.fetchUsers(query);
         setState(() {
           _searchResults = results;
         });
@@ -78,7 +67,8 @@ class _SearchPageState extends State<SearchPage> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search ${_searchType == "Recipes" ? "recipes" : "users"}...',
+                      hintText:
+                          'Search ${_searchType == "Recipes" ? "recipes" : "users"}...',
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -88,7 +78,7 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                
+
                 // Dropdown for Search Type
                 DropdownButton<String>(
                   value: _searchType,
@@ -119,12 +109,12 @@ class _SearchPageState extends State<SearchPage> {
                     itemBuilder: (context, index) {
                       return _searchType == 'Recipes'
                           ? SearchedRecipe(
-                              id: _searchResults[index]['recipeId'],
-                              name: _searchResults[index]['recipeName']
+                              id: _searchResults[index].id,
+                              name: _searchResults[index].name,
                             )
                           : SearchedUser(
-                              id: _searchResults[index]['userId'],
-                              name: _searchResults[index]['username']
+                              mail: _searchResults[index].mail,
+                              name: _searchResults[index].username,
                             );
                     },
                   ),

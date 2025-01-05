@@ -30,7 +30,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
   late Future<List<Recipe>> _recipesFuture;
 
   @override
@@ -39,16 +39,15 @@ class _MyHomePageState extends State<MyHomePage> {
     _recipesFuture = _fetchRecipes();
   }
 
+  // Define _fetchRecipes here to fetch recipes
   Future<List<Recipe>> _fetchRecipes() async {
-    final recipeData = await _databaseHelper.getAllRecipes();
-    return recipeData.map((data) {
-      return Recipe(
-        id: data['recipeId'],
-        name: data['recipeName'],
-        description: data['recipeDescription'],
-        tags: data['recipeTags'],
-      );
-    }).toList();
+    try {
+      List<Recipe> recipes = await _databaseHelper.fetchRecipes();
+      return recipes;
+    } catch (e) {
+      print("Error fetching recipes: $e");
+      return [];
+    }
   }
 
   @override
@@ -222,22 +221,4 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
   }
-}
-
-class Recipe {
-  final int id;
-  final String name;
-  final String? description;
-  final String? tags;
-  bool isLiked;
-  List<String> comments; // Mutable list
-
-  Recipe({
-    required this.id,
-    required this.name,
-    this.description,
-    this.tags,
-    this.isLiked = false,
-    List<String>? comments, // Nullable parameter for initialization
-  }) : comments = comments ?? []; // Initialize mutable list
 }

@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
 class SearchedUser extends StatelessWidget {
-  final int id;
+  final String mail;
   final String name;
 
-  const SearchedUser({
-    super.key, 
-    required this.id, 
-    required this.name
-  });
+  const SearchedUser({super.key, required this.mail, required this.name});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +14,7 @@ class SearchedUser extends StatelessWidget {
         leading: Container(
           width: 60,
           height: 60,
-          color: Colors.red,  // Placeholder red box
+          color: Colors.red, // Placeholder red box
           child: const Center(child: Text('IMG')),
         ),
         title: Text(name),
@@ -26,7 +22,7 @@ class SearchedUser extends StatelessWidget {
         trailing: const Icon(Icons.arrow_forward_ios),
         onTap: () {
           // TODO: Navigate to user profile page with this.id
-          print('Navigating to user $id');
+          print('Navigating to user $mail');
         },
       ),
     );
