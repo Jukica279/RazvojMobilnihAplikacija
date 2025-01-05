@@ -21,7 +21,6 @@ class DatabaseHelper {
       final results = await connection.query(
           'SELECT SifraRecepta,NazivRecepta,OpisRecepta, OznakeRecepta FROM Recept');
       return results.map((row) {
-        print('Type of OznakeRecepta: ${row['OznakeRecepta'].runtimeType}');
         return Recipe(
           id: row['SifraRecepta'] as int,
           name: row['NazivRecepta'] as String,
