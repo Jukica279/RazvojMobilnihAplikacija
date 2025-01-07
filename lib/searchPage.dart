@@ -20,25 +20,22 @@ class _SearchPageState extends State<SearchPage> {
   final List<String> _searchTypeOptions = ['Recipes', 'Users'];
 
   void _performSearch(String query) async {
-    if (query.isEmpty) {
-      setState(() {
-        _searchResults = [];
-      });
-      return;
-    }
-
     try {
       if (_searchType == 'Recipes') {
         // Fetch recipes from the database
-        List<Recipe> results = await _databaseHelper.fetchRecipes();
+        List<Recipe> allRecipes = await _databaseHelper.fetchRecipes();
         setState(() {
-          _searchResults = results;
+          _searchResults = query.isEmpty
+              ? allRecipes
+              : allRecipes.where((recipe) => recipe.name.toLowerCase().contains(query.toLowerCase())).toList();
         });
       } else if (_searchType == 'Users') {
         // Fetch users from the database
-        List<User> results = await _databaseHelper.fetchUsers(query);
+        List<User> allUsers = await _databaseHelper.fetchUsers('');
         setState(() {
-          _searchResults = results;
+          _searchResults = query.isEmpty
+              ? allUsers
+              : allUsers.where((user) => user.username.toLowerCase().contains(query.toLowerCase())).toList();
         });
       }
     } catch (e) {
@@ -47,6 +44,13 @@ class _SearchPageState extends State<SearchPage> {
         _searchResults = [];
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch all items initially
+    _performSearch('');
   }
 
   @override
@@ -93,6 +97,7 @@ class _SearchPageState extends State<SearchPage> {
                       _searchType = newValue!;
                       _searchResults = []; // Clear previous results
                       _searchController.clear(); // Clear search field
+                      _performSearch(''); // Fetch all items for the new type
                     });
                   },
                 ),
@@ -102,23 +107,33 @@ class _SearchPageState extends State<SearchPage> {
 
           // Search Results
           Expanded(
-            child: _searchResults.isEmpty
-                ? const Center(child: Text('Start searching...'))
-                : ListView.builder(
-                    itemCount: _searchResults.length,
-                    itemBuilder: (context, index) {
-                      return _searchType == 'Recipes'
-                          ? SearchedRecipe(
-                              id: _searchResults[index].id,
-                              name: _searchResults[index].name,
-                            )
-                          : SearchedUser(
-                              mail: _searchResults[index].mail,
-                              name: _searchResults[index].username,
-                            );
-                    },
-                  ),
-          ),
+          child: _searchResults.isEmpty
+              ? const Center(child: Text('No results found.'))
+              : ListView.builder(
+                  itemCount: _searchResults.length,
+                  itemBuilder: (context, index) {
+                    // Assuming that Recipe and User objects have different structures
+                    if (_searchType == 'Recipes') {
+                      // Assuming Recipe has fields: id, name, description, and tags
+                      final recipe = _searchResults[index]; // You should make sure this is a Recipe object
+                      return SearchedRecipe(
+                        id: recipe.id,
+                        name: recipe.name,
+                        description: recipe.description, // Pass description
+                        tags: recipe.tags, // Pass tags
+                      );
+                    } else {
+                      // Assuming User has fields: mail and username
+                      final user = _searchResults[index]; // You should make sure this is a User object
+                      return SearchedUser(
+                        mail: user.mail,
+                        name: user.username, // Pass username as name
+                      );
+                    }
+                  },
+                ),
+        )
+
         ],
       ),
       bottomNavigationBar: const CustomNavigationBar(

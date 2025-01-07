@@ -1,3 +1,4 @@
+import 'package:dailyflow/widgets/popups/user_profile_dialog.dart';
 import 'package:flutter/material.dart';
 
 class SearchedUser extends StatelessWidget {
@@ -21,8 +22,14 @@ class SearchedUser extends StatelessWidget {
         subtitle: const Text('Tap to view profile'),
         trailing: const Icon(Icons.arrow_forward_ios),
         onTap: () {
-          // TODO: Navigate to user profile page with this.id
-          print('Navigating to user $mail');
+          // Show user profile dialog on tap
+          showDialog(
+            context: context,
+            builder: (context) => UserProfileDialog(
+              mail: mail,
+              name: name,
+            ),
+          );
         },
       ),
     );

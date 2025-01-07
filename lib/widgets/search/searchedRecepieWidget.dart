@@ -1,13 +1,19 @@
+import 'package:dailyflow/database/database.dart';
+import 'package:dailyflow/widgets/popups/recepie_details_dialog.dart';
 import 'package:flutter/material.dart';
 
 class SearchedRecipe extends StatelessWidget {
   final int id;
   final String name;
+  final String description; // Assuming description is part of the recipe.
+  final String tags; // Assuming tags are part of the recipe.
 
   const SearchedRecipe({
     super.key, 
     required this.id, 
-    required this.name
+    required this.name,
+    required this.description, 
+    required this.tags
   });
 
   @override
@@ -25,8 +31,13 @@ class SearchedRecipe extends StatelessWidget {
         subtitle: const Text('Tap to view recipe details'),
         trailing: const Icon(Icons.arrow_forward_ios),
         onTap: () {
-          // TODO: Navigate to recipe details page with this.id
-          print('Navigating to recipe $id');
+          // Show recipe details dialog on tap
+          showDialog(
+            context: context,
+            builder: (context) => RecipeDetailsDialog(
+              recipe: Recipe(id: id, name: name, description: description, tags: tags),
+            ),
+          );
         },
       ),
     );

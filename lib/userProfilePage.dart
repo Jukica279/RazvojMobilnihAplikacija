@@ -23,7 +23,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void initState() {
     super.initState();
-    _userProfile = fetchProfile('Barack Obama');  // Replace with dynamic query if needed
+    //_userProfile = fetchProfile('Barack Obama');
   }
 
   @override

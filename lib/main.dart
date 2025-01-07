@@ -1,4 +1,6 @@
+import 'package:dailyflow/widgets/popups/comment_dialog.dart';
 import 'package:dailyflow/widgets/navigationBar.dart';
+import 'package:dailyflow/widgets/popups/recepie_details_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:dailyflow/database/database.dart';
 
@@ -90,84 +92,72 @@ class _MyHomePageState extends State<MyHomePage> {
                     itemBuilder: (context, index) {
                       final recipe = recipes[index];
 
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                recipe.name,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                      return GestureDetector(
+                        onTap: () {
+                          // Open recipe details in a dialog
+                          showDialog(
+                            context: context,
+                            builder: (context) => RecipeDetailsDialog(
+                              recipe: recipe, // Pass the recipe to the dialog
+                            ),
+                          );
+                        },
+                        child: Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  recipe.name,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(recipe.description ??
-                                  'No description provided.'),
-                              const SizedBox(height: 8),
-                              Text(
-                                recipe.tags ?? '',
-                                style: const TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  color: Colors.grey,
+                                const SizedBox(height: 8),
+                                Text(recipe.description ??
+                                    'No description provided.'),
+                                const SizedBox(height: 8),
+                                Text(
+                                  recipe.tags ?? '',
+                                  style: const TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.grey,
+                                  ),
                                 ),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      recipe.isLiked
-                                          ? Icons.thumb_up
-                                          : Icons.thumb_up_alt_outlined,
-                                      color:
-                                          recipe.isLiked ? Colors.blue : null,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        recipe.isLiked
+                                            ? Icons.thumb_up
+                                            : Icons.thumb_up_alt_outlined,
+                                        color:
+                                            recipe.isLiked ? Colors.blue : null,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          recipe.isLiked = !recipe.isLiked;
+                                        });
+                                      },
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        recipe.isLiked = !recipe.isLiked;
-                                      });
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.comment_outlined),
-                                    onPressed: () {
-                                      _openCommentDialog(context, recipe);
-                                    },
-                                  ),
-                                ],
-                              ),
-                              if (recipe.comments.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: recipe.comments.map((comment) {
-                                      return Container(
-                                        margin:
-                                            const EdgeInsets.only(bottom: 8.0),
-                                        padding: const EdgeInsets.all(8.0),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                              color: const Color.fromARGB(
-                                                  255, 159, 197, 144)),
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                          color: Colors.grey[100],
-                                        ),
-                                        child: Text(
-                                          "- $comment",
-                                          style: const TextStyle(fontSize: 16),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
+                                    IconButton(
+                                      icon: const Icon(Icons.comment_outlined),
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) =>
+                                              CommentDialog(recipe: recipe),
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -182,43 +172,6 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: const CustomNavigationBar(
         enabledButtons: [true, false, false, false],
       ),
-    );
-  }
-
-  void _openCommentDialog(BuildContext context, Recipe recipe) {
-    final TextEditingController _commentController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Add Comment'),
-          content: TextField(
-            controller: _commentController,
-            decoration: const InputDecoration(hintText: 'Enter your comment'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (_commentController.text.isNotEmpty) {
-                  setState(() {
-                    // Add the comment to the list
-                    recipe.comments.add(_commentController.text);
-                  });
-                }
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        );
-      },
     );
   }
 }
