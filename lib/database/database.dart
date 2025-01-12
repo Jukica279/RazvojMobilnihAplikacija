@@ -37,7 +37,7 @@ class DatabaseHelper {
     final connection = await connect();
     try {
       final results = await connection.query(
-        'SELECT KorisnickoIme,EmailKorisnika FROM Korisnik WHERE KorisnickoIme LIKE ?',
+        'SELECT KorisnickoIme,EmailKorisnika FROM KORISNIK WHERE KorisnickoIme LIKE ?',
         ['%$query%'],
       );
       return results.map((row) {

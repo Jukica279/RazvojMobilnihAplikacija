@@ -3,6 +3,7 @@ import 'package:dailyflow/widgets/navigationBar.dart';
 import 'package:dailyflow/widgets/popups/recepie_details_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:dailyflow/database/database.dart';
+//import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,6 +34,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
+  final Map<int, bool> _showComments = {};
   late Future<List<Recipe>> _recipesFuture;
 
   @override
@@ -52,6 +54,18 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void _addComment(Recipe recipe, String comment) {
+    setState(() {
+      recipe.comments.add(comment);
+    });
+  }
+
+  void _toggleVisibility(int recipeId) {
+    setState(() {
+      _showComments[recipeId] = !(_showComments[recipeId] ?? false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,6 +78,19 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            /*  const SizedBox(height: 10),
+            const Text(
+              'Our Location',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const Expanded(
+                child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target:
+                    LatLng(45.328979, 14.457664), // Default to San Francisco
+                zoom: 12,
+              ),
+            )), */
             const Text(
               'Recipe recommendations',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -145,12 +172,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.comment_outlined),
+                                      icon: Icon(Icons.comment_outlined),
                                       onPressed: () {
                                         showDialog(
                                           context: context,
-                                          builder: (context) =>
-                                              CommentDialog(recipe: recipe),
+                                          builder: (context) => CommentDialog(
+                                              recipe: recipe,
+                                              onAddComment: (comment) {
+                                                _addComment(recipe, comment);
+                                              }),
                                         );
                                       },
                                     ),
