@@ -1,6 +1,4 @@
 import 'package:mysql1/mysql1.dart';
-import 'dart:typed_data';
-import 'dart:convert'; //treba za Uint8List(format slika)
 
 class DatabaseHelper {
   // Connection settings
@@ -84,6 +82,24 @@ Future<List<Profile>> fetchProfile(String email) async {
       await connection.close();
     }
   }
+
+  Future<bool> insertRecipe(String nazivRecepta, String opisRecepta, String oznakeRecepta) async {
+    final connection = await connect();
+    try {
+      final result = await connection.query(
+        'INSERT INTO Recept (NazivRecepta, OpisRecepta, OznakeRecepta) VALUES (?, ?, ?)',
+        [nazivRecepta, opisRecepta, oznakeRecepta],
+      );
+      // Check if the insert was successful (if result.insertId is not null)
+      return result.affectedRows != null && result.affectedRows! > 0;
+    } catch (e) {
+      print('Error inserting recipe: $e');
+      return false;
+    } finally {
+      await connection.close();
+    }
+  }
+
 }
 
 

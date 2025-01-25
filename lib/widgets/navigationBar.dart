@@ -9,58 +9,59 @@ class CustomNavigationBar extends StatelessWidget {
   final List<bool> enabledButtons;
   const CustomNavigationBar({super.key, required this.enabledButtons});
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      color: Colors.black87,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          StandardButton(
-            icon: const Icon(Icons.home, color: Colors.white),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                NoAnimationPageRoute(builder: (context) => const MyHomePage()),
-              );
-            },
-            selected: enabledButtons[0],
-          ),
-          StandardButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                NoAnimationPageRoute(builder: (context) => const SearchPage()),
-              );
-            },
-            selected: enabledButtons[1],
-          ),
-          StandardButton(
-            icon: const Icon(Icons.notifications, color: Colors.white),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                NoAnimationPageRoute(builder: (context) => const NotificationsPage()),
-              );
-            },
-            selected: enabledButtons[2],
-          ),
-          StandardButton(
-            icon: const Icon(Icons.person, color: Colors.white),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                NoAnimationPageRoute(builder: (context) => const UserProfilePage()),
-              );
-            },
-            selected: enabledButtons[3],
-          ),
-        ],
-      ),
-    );
-  }
+@override
+Widget build(BuildContext context) {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 10),
+    color: Colors.green, // Changed navigation bar color to green
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        StandardButton(
+          icon: const Icon(Icons.home, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              NoAnimationPageRoute(builder: (context) => const MyHomePage()),
+            );
+          },
+          selected: enabledButtons[0],
+        ),
+        StandardButton(
+          icon: const Icon(Icons.search, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              NoAnimationPageRoute(builder: (context) => const SearchPage()),
+            );
+          },
+          selected: enabledButtons[1],
+        ),
+        StandardButton(
+          icon: const Icon(Icons.notifications, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              NoAnimationPageRoute(builder: (context) => const NotificationsPage()),
+            );
+          },
+          selected: enabledButtons[2],
+        ),
+        StandardButton(
+          icon: const Icon(Icons.person, color: Colors.white),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              NoAnimationPageRoute(builder: (context) => const UserProfilePage()),
+            );
+          },
+          selected: enabledButtons[3],
+        ),
+      ],
+    ),
+  );
+}
+
 }
 
 class NoAnimationPageRoute<T> extends PageRouteBuilder<T> {

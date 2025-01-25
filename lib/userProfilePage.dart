@@ -1,24 +1,23 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:dailyflow/widgets/navigationBar.dart';
-import 'package:dailyflow/database/database.dart'; // Import the database where Profile is defined
+import 'package:dailyflow/database/database.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
 
   @override
-  _UserProfilePageState createState() => _UserProfilePageState();
-}
+  _UserProfilePageState createState() => _UserProfilePageState();}
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  final DatabaseHelper _databaseHelper = DatabaseHelper(); // Instance of DatabaseHelper
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
   late Future<List<Profile>> _userProfiles;
-  String currentEmail = 'user1@gmail.com'; // Default email for the initial user
+  String currentEmail = 'user1@gmail.com';
 
+  // Postavljanje pocetnog profila za User 1
   @override
   void initState() {
     super.initState();
-    _userProfiles = _databaseHelper.fetchProfile(currentEmail); // Fetch profile based on initial email
+    _userProfiles = _databaseHelper.fetchProfile(currentEmail);
   }
 
   void _showSwitchUserDialog() {
@@ -44,44 +43,113 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 decoration: const InputDecoration(
                   labelText: 'Password',
                 ),
-                obscureText: true, // Hide password input
+                obscureText: true,
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context), // Close the dialog
+              onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
-                // Get the email and password entered by the user
                 final username = emailController.text;
                 final password = passwordController.text;
 
-                // Call the switchUser API to verify the credentials
                 bool isValidUser = await _databaseHelper.switchUser(username, password);
 
-                // If the credentials are valid, show a "yes" message, otherwise show "no"
-                Navigator.pop(context); // Close the dialog first
-
+                Navigator.pop(context);
+                //dohvat i provjera unesenog racuna
                 if (isValidUser) {
-                  // Get the email for the new user from the database after verification
                   final userProfiles = await _databaseHelper.fetchUsers(username);
                   if (userProfiles.isNotEmpty) {
                     setState(() {
-                      currentEmail = userProfiles.first.mail; // Set new email
-                      _userProfiles = _databaseHelper.fetchProfile(currentEmail); // Fetch the profile with the new email
+                      currentEmail = userProfiles.first.mail;
+                      _userProfiles = _databaseHelper.fetchProfile(currentEmail);
                     });
                   }
                 } else {
-                  // Show "no" message using SnackBar
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invalid username or password')),
+                    const SnackBar(content: Text('False Username or Password')),
                   );
                 }
               },
               child: const Text('Log in'),
+            ),
+          ],
+        );
+},);}
+
+  void _showCreateRecipeDialog() {
+    final nazivReceptaController = TextEditingController();
+    final opisReceptaController = TextEditingController();
+    final oznakeReceptaController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Create Recipe'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nazivReceptaController,
+                decoration: const InputDecoration(
+                  labelText: 'Recipe Name',
+                ),
+              ),
+              TextField(
+                controller: opisReceptaController,
+                decoration: const InputDecoration(
+                  labelText: 'Recipe Description',
+                ),
+                maxLines: 3,
+              ),
+              TextField(
+                controller: oznakeReceptaController,
+                decoration: const InputDecoration(
+                  labelText: 'Recipe Tags',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final nazivRecepta = nazivReceptaController.text;
+                final opisRecepta = opisReceptaController.text;
+                final oznakeRecepta = oznakeReceptaController.text;
+
+                if (nazivRecepta.isEmpty || opisRecepta.isEmpty || oznakeRecepta.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill in all the fields.')),
+                  );
+                  return;
+                }
+
+                bool success = await _databaseHelper.insertRecipe(
+                  nazivRecepta,
+                  opisRecepta,
+                  oznakeRecepta,
+                );
+
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success
+                        ? 'Recipe "$nazivRecepta" has been created'
+                        : 'Failed to create recipe.'),
+                  ),
+                );
+              },
+              child: const Text('Create Recipe'),
             ),
           ],
         );
@@ -117,7 +185,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return const Center(child: Text('No data available.'));
             } else {
-              final profile = snapshot.data!.first; // Assuming it returns a single profile
+              final profile = snapshot.data!.first;
               return Stack(
                 children: [
                   Positioned(
@@ -147,15 +215,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ],
                     ),
                   ),
-                  // Create button
                   Positioned(
                     top: MediaQuery.of(context).size.height * 0.3,
                     left: 0,
                     right: 0,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Add your "Create" button functionality here
-                      },
+                      onPressed: _showCreateRecipeDialog,
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.green,
