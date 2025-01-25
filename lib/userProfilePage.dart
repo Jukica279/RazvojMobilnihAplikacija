@@ -1,14 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:dailyflow/widgets/navigationBar.dart';
-import 'package:dailyflow/database/database.dart';
-
-class UserProfile {
-  final String username;
-  final Uint8List picture;
-
-  UserProfile({required this.username, required this.picture});
-}
+import 'package:dailyflow/database/database.dart'; // Import the database where Profile is defined
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -18,22 +11,13 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  late Future<UserProfile> _userProfile;
+  final DatabaseHelper _databaseHelper = DatabaseHelper(); // Declare the instance of DatabaseHelper
+  late Future<List<Profile>> _userProfiles;
 
   @override
   void initState() {
     super.initState();
-    // Inicijalizacija _userProfile
-    _userProfile = fetchProfile('Barack Obama');
-  }
-
-  Future<UserProfile> fetchProfile(String username) async {
-    // Simulacija dohvaćanja profila
-    await Future.delayed(const Duration(seconds: 2)); // Simulacija kašnjenja
-    return UserProfile(
-      username: username,
-      picture: Uint8List(0), // Postavite odgovarajuću sliku
-    );
+    _userProfiles = _databaseHelper.fetchProfile('johndoe@gmail.com'); // Fetch profile based on mail
   }
 
   @override
@@ -41,52 +25,74 @@ class _UserProfilePageState extends State<UserProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('User Profile'),
-      ),
-      body: Column(
-        children: [
-          // Profilna slika i korisničko ime
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: FutureBuilder<UserProfile>(
-              future: _userProfile,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData) {
-                  return const Center(child: Text('No data available.'));
-                } else {
-                  final profile = snapshot.data!;
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      profile.picture.isNotEmpty
-                          ? CircleAvatar(
-                              radius: 50,
-                              backgroundImage: MemoryImage(profile.picture),
-                            )
-                          : const Icon(
-                              Icons.account_circle,
-                              size: 100,
-                              color: Colors.grey,
-                            ),
-                      const SizedBox(height: 16),
-                      Text(
-                        profile.username,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  );
-                }
-              },
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Handle the switch user logic here
+              print('Switch User button pressed');
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white, // Text color
+              backgroundColor: Colors.green, // Button background
             ),
+            child: const Text('Switch User'),
           ),
-          // Additional profile details can be added here
         ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: FutureBuilder<List<Profile>>(
+          future: _userProfiles,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No data available.'));
+            } else {
+              final profile = snapshot.data!.first; // Assuming it returns a single profile
+              return Stack(
+                children: [
+                  Positioned(
+                    top: MediaQuery.of(context).size.height * 0.1, // Position in the upper third
+                    left: 0,
+                    right: 0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+                      children: [
+                        CircleAvatar(
+                          radius: 50, // Size the profile picture
+                          backgroundColor: Colors.grey[300], // Background color for avatar
+                          child: const Icon(
+                            Icons.account_circle,
+                            size: 60,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          profile.username, // Display username
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          profile.mail, // Display mail
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+          },
+        ),
       ),
       bottomNavigationBar: const CustomNavigationBar(
         enabledButtons: [false, false, false, true],

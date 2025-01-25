@@ -50,6 +50,24 @@ class DatabaseHelper {
       await connection.close();
     }
   }
+
+Future<List<Profile>> fetchProfile(String email) async {
+  final connection = await connect();
+  try {
+    final results = await connection.query(
+      'SELECT KorisnickoIme, EmailKorisnika FROM KORISNIK WHERE EmailKorisnika = ?',  // Filter by EmailKorisnika
+      [email],  // Pass the email parameter
+    );
+    return results.map((row) {
+      return Profile(
+        mail: row['EmailKorisnika'] as String,
+        username: row['KorisnickoIme'] as String,
+      );
+    }).toList();
+  } finally {
+    await connection.close();
+  }
+}
 }
 
 class Recipe {
@@ -78,4 +96,11 @@ class User {
     required this.mail,
     required this.username,
   });
+}
+
+class Profile {
+  final String username;
+  final String mail;
+
+  Profile({required this.username, required this.mail});
 }
