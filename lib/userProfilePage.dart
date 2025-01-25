@@ -23,7 +23,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void initState() {
     super.initState();
-    //_userProfile = fetchProfile('Barack Obama');
+    // Inicijalizacija _userProfile
+    _userProfile = fetchProfile('Barack Obama');
+  }
+
+  Future<UserProfile> fetchProfile(String username) async {
+    // Simulacija dohvaćanja profila
+    await Future.delayed(const Duration(seconds: 2)); // Simulacija kašnjenja
+    return UserProfile(
+      username: username,
+      picture: Uint8List(0), // Postavite odgovarajuću sliku
+    );
   }
 
   @override
