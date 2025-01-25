@@ -1,4 +1,6 @@
 import 'package:mysql1/mysql1.dart';
+import 'dart:typed_data';
+import 'dart:convert'; //treba za Uint8List(format slika)
 
 class DatabaseHelper {
   // Connection settings
@@ -56,7 +58,7 @@ Future<List<Profile>> fetchProfile(String email) async {
   try {
     final results = await connection.query(
       'SELECT KorisnickoIme, EmailKorisnika FROM KORISNIK WHERE EmailKorisnika = ?',  // Filter by EmailKorisnika
-      [email],  // Pass the email parameter
+      [email]
     );
     return results.map((row) {
       return Profile(
@@ -68,7 +70,22 @@ Future<List<Profile>> fetchProfile(String email) async {
     await connection.close();
   }
 }
+
+
+  Future<bool> switchUser(String username, String password) async {
+    final connection = await connect();
+    try {
+      final results = await connection.query(
+        'SELECT * FROM KORISNIK WHERE KorisnickoIme = ? AND Lozinka = ?',
+        [username, password],
+      );
+      return results.isNotEmpty;
+    } finally {
+      await connection.close();
+    }
+  }
 }
+
 
 class Recipe {
   final int id;
@@ -101,6 +118,7 @@ class User {
 class Profile {
   final String username;
   final String mail;
-
   Profile({required this.username, required this.mail});
 }
+
+
