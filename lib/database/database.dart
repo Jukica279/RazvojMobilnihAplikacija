@@ -76,7 +76,7 @@ class DatabaseHelper {
     final connection = await connect();
     try {
       final results = await connection.query(
-          'SELECT KorisnickoIme, EmailKorisnika FROM KORISNIK WHERE EmailKorisnika = ?', // Filter by EmailKorisnika
+          'SELECT KorisnickoIme, EmailKorisnika FROM KORISNIK WHERE EmailKorisnika = ?',
           [email]);
       return results.map((row) {
         return Profile(
