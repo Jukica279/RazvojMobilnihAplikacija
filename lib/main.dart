@@ -3,7 +3,7 @@ import 'package:dailyflow/widgets/navigationBar.dart';
 import 'package:dailyflow/widgets/popups/recepie_details_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:dailyflow/database/database.dart';
-//import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,15 +37,22 @@ class _MyHomePageState extends State<MyHomePage> {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   final Map<int, bool> _showComments = {};
   late Future<List<Recipe>> _recipesFuture;
-  String currentEmail = 'user1@gmail.com';
+  String currentEmail = '';
 
   @override
   void initState() {
     super.initState();
+    _loadCurrentUser();
     _recipesFuture = _fetchRecipes();
   }
 
-  // Define _fetchRecipes here to fetch recipes
+  Future<void> _loadCurrentUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentEmail = prefs.getString('currentEmail') ?? '';
+    });
+  }
+
   Future<List<Recipe>> _fetchRecipes() async {
     try {
       List<Recipe> recipes = await _databaseHelper.fetchRecipes();
@@ -74,25 +81,24 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text('Home Page'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString('currentEmail', '');
+              setState(() {
+                currentEmail = '';
+              });
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /*  const SizedBox(height: 10),
-            const Text(
-              'Our Location',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const Expanded(
-                child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target:
-                    LatLng(45.328979, 14.457664), // Default to San Francisco
-                zoom: 12,
-              ),
-            )), */
             const Text(
               'Recipe recommendations',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -123,11 +129,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
                       return GestureDetector(
                         onTap: () {
-                          // Open recipe details in a dialog
                           showDialog(
                             context: context,
                             builder: (context) => RecipeDetailsDialog(
-                              recipe: recipe, // Pass the recipe to the dialog
+                              recipe: recipe,
                             ),
                           );
                         },
@@ -175,18 +180,22 @@ class _MyHomePageState extends State<MyHomePage> {
                                     ),
                                     IconButton(
                                       icon: Icon(Icons.comment_outlined),
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => CommentDialog(
-                                            recipe: recipe,
-                                            userEmail: currentEmail,
-                                            onAddComment: (comment) {
-                                              _addComment(recipe, comment);
+                                      onPressed: currentEmail.isEmpty
+                                          ? null
+                                          : () {
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) =>
+                                                    CommentDialog(
+                                                  recipe: recipe,
+                                                  userEmail: currentEmail,
+                                                  onAddComment: (comment) {
+                                                    _addComment(
+                                                        recipe, comment);
+                                                  },
+                                                ),
+                                              );
                                             },
-                                          ),
-                                        );
-                                      },
                                     ),
                                   ],
                                 ),
