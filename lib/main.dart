@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'DailyFlow',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -37,6 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
   final Map<int, bool> _showComments = {};
   late Future<List<Recipe>> _recipesFuture;
+  String currentEmail = 'user1@gmail.com';
 
   @override
   void initState() {
@@ -178,10 +179,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                         showDialog(
                                           context: context,
                                           builder: (context) => CommentDialog(
-                                              recipe: recipe,
-                                              onAddComment: (comment) {
-                                                _addComment(recipe, comment);
-                                              }),
+                                            recipe: recipe,
+                                            userEmail: currentEmail,
+                                            onAddComment: (comment) {
+                                              _addComment(recipe, comment);
+                                            },
+                                          ),
                                         );
                                       },
                                     ),

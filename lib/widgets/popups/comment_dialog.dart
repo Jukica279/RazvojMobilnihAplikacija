@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 
 class CommentDialog extends StatefulWidget {
   final Recipe recipe;
+  final String userEmail;
   final Function(String) onAddComment;
 
-  const CommentDialog(
-      {required this.recipe, required this.onAddComment, Key? key})
-      : super(key: key);
+  const CommentDialog({
+    required this.recipe,
+    required this.userEmail,
+    required this.onAddComment,
+    Key? key,
+  }) : super(key: key);
 
   @override
   _CommentDialogState createState() => _CommentDialogState();
@@ -15,22 +19,27 @@ class CommentDialog extends StatefulWidget {
 
 class _CommentDialogState extends State<CommentDialog> {
   final TextEditingController _commentController = TextEditingController();
-  final List<String> _comments = [];
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
+  late Future<List<String>> _commentsFuture;
 
   @override
   void initState() {
     super.initState();
-    // Inicializujemo komentare sa postojećim komentarima recepta
-    _comments.addAll(widget.recipe.comments);
+    // Dohvaćanje komentara iz baze
+    _commentsFuture = _databaseHelper.fetchComments(widget.recipe.id);
   }
 
-  void _addComment() {
+  Future<void> _addComment() async {
     String comment = _commentController.text.trim();
     if (comment.isNotEmpty) {
+      await _databaseHelper.addComment(
+          widget.recipe.id, comment, widget.userEmail);
+
       setState(() {
-        _comments.add(comment);
+        _commentsFuture = _databaseHelper.fetchComments(widget.recipe.id);
       });
-      widget.onAddComment(comment); // Poziva funkciju za dodavanje komentara
+
+      widget.onAddComment(comment);
       _commentController.clear();
     }
   }
@@ -43,12 +52,30 @@ class _CommentDialogState extends State<CommentDialog> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Prikazivanje svih komentara
-            for (var comment in _comments)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: Text('- $comment'),
-              ),
+            // Prikaz komentara iz baze
+            FutureBuilder<List<String>>(
+              future: _commentsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Text('No comments available.');
+                }
+
+                final comments = snapshot.data!;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: comments
+                      .map((comment) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4.0),
+                            child: Text('- $comment'),
+                          ))
+                      .toList(),
+                );
+              },
+            ),
             const SizedBox(height: 10),
             // Polje za unos novog komentara
             TextField(
