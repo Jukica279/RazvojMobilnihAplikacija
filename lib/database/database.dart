@@ -1,17 +1,15 @@
 import 'package:mysql1/mysql1.dart';
 
 class DatabaseHelper {
-  // Connection settings
   final ConnectionSettings settings = ConnectionSettings(
     host: 'ucka.veleri.hr',
-    port: 3306, // Default MySQL port
+    port: 3306,
     user: 'lmajetic',
     password: '11',
     db: 'lmajetic',
   );
 
   Future<MySqlConnection> connect() async {
-    // Establish a connection to the database
     return await MySqlConnection.connect(settings);
   }
 
@@ -105,22 +103,21 @@ class DatabaseHelper {
   }
 
   Future<bool> insertRecipe(
-      String nazivRecepta, String opisRecepta, String oznakeRecepta) async {
-    final connection = await connect();
-    try {
-      final result = await connection.query(
-        'INSERT INTO Recept (NazivRecepta, OpisRecepta, OznakeRecepta) VALUES (?, ?, ?)',
-        [nazivRecepta, opisRecepta, oznakeRecepta],
-      );
-      // Check if the insert was successful (if result.insertId is not null)
-      return result.affectedRows != null && result.affectedRows! > 0;
-    } catch (e) {
-      print('Error inserting recipe: $e');
-      return false;
-    } finally {
-      await connection.close();
-    }
+    String nazivRecepta, String opisRecepta, String oznakeRecepta, String emailKorisnika) async {
+  final connection = await connect();
+  try {
+    final result = await connection.query(
+      'INSERT INTO Recept (NazivRecepta, OpisRecepta, OznakeRecepta, EmailKorisnika) VALUES (?, ?, ?, ?)',
+      [nazivRecepta, opisRecepta, oznakeRecepta, emailKorisnika],
+    );
+    return result.affectedRows != null && result.affectedRows! > 0;
+  } catch (e) {
+    print('Error inserting recipe: $e');
+    return false;
+  } finally {
+    await connection.close();
   }
+}
 
     Future<List<Recipe>> fetchUsersRecipes(String userEmail) async {
     final connection = await connect();
@@ -152,7 +149,7 @@ class Recipe {
   final String? description;
   final String? tags;
   bool isLiked;
-  List<String> comments; // Mutable list
+  List<String> comments;
 
   Recipe({
     required this.id,
@@ -160,8 +157,8 @@ class Recipe {
     this.description,
     this.tags,
     this.isLiked = false,
-    List<String>? comments, // Nullable parameter for initialization
-  }) : comments = comments ?? []; // Initialize mutable list
+    List<String>? comments,
+  }) : comments = comments ?? [];
 }
 
 class User {

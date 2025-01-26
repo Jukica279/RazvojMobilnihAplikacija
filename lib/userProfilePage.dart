@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dailyflow/widgets/navigationBar.dart';
 import 'package:dailyflow/database/database.dart';
-
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -12,15 +12,33 @@ class UserProfilePage extends StatefulWidget {
 
 class _UserProfilePageState extends State<UserProfilePage> {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
-  late Future<List<Recipe>> _userRecipes;
-  String currentEmail = 'user1@gmail.com';
+  late Future<List<Profile>> _userProfiles;
+  String currentEmail = '';
 
   @override
   void initState() {
     super.initState();
-    _userRecipes = _databaseHelper.fetchUsersRecipes(currentEmail);
+    _userProfiles = Future.value([]);
+    _loadCurrentUser();
   }
 
+  // Učitaj korisnički email iz SharedPreferences
+  void _loadCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('currentEmail') ?? 'user1@gmail.com';
+    setState(() {
+      currentEmail = email;
+      _userProfiles = _databaseHelper.fetchProfile(currentEmail);
+    });
+  }
+
+  // Spremi mail u SharedPreferences
+  void _saveCurrentUser(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('currentEmail', email);
+  }
+
+  // popup za promjenu korisnika
   void _showSwitchUserDialog() {
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
@@ -35,15 +53,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
             children: [
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
-                ),
+                decoration: const InputDecoration(labelText: 'Username'),
               ),
               TextField(
                 controller: passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                ),
+                decoration: const InputDecoration(labelText: 'Password'),
                 obscureText: true,
               ),
             ],
@@ -67,12 +81,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   if (userProfiles.isNotEmpty) {
                     setState(() {
                       currentEmail = userProfiles.first.mail;
-                      _userRecipes = _databaseHelper.fetchUsersRecipes(currentEmail);
+                      _saveCurrentUser(currentEmail);
+                      _userProfiles = _databaseHelper.fetchProfile(currentEmail);
                     });
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('False Username or Password')),
+                    const SnackBar(content: Text('Invalid username or password')),
                   );
                 }
               },
@@ -84,6 +99,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
+  // popup za kreirat recept
   void _showCreateRecipeDialog() {
     final nazivReceptaController = TextEditingController();
     final opisReceptaController = TextEditingController();
@@ -99,22 +115,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
             children: [
               TextField(
                 controller: nazivReceptaController,
-                decoration: const InputDecoration(
-                  labelText: 'Recipe Name',
-                ),
+                decoration: const InputDecoration(labelText: 'Recipe Name'),
               ),
               TextField(
                 controller: opisReceptaController,
-                decoration: const InputDecoration(
-                  labelText: 'Recipe Description',
-                ),
+                decoration: const InputDecoration(labelText: 'Recipe Description'),
                 maxLines: 3,
               ),
               TextField(
                 controller: oznakeReceptaController,
-                decoration: const InputDecoration(
-                  labelText: 'Recipe Tags',
-                ),
+                decoration: const InputDecoration(labelText: 'Recipe Tags'),
               ),
             ],
           ),
@@ -136,10 +146,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   return;
                 }
 
+                final prefs = await SharedPreferences.getInstance();
+                final currentEmail = prefs.getString('currentEmail') ?? 'user1@gmail.com';
+
                 bool success = await _databaseHelper.insertRecipe(
                   nazivRecepta,
                   opisRecepta,
                   oznakeRecepta,
+                  currentEmail,
                 );
 
                 Navigator.pop(context);
@@ -151,11 +165,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         : 'Failed to create recipe.'),
                   ),
                 );
-
-                // Refresh the recipes
-                setState(() {
-                  _userRecipes = _databaseHelper.fetchUsersRecipes(currentEmail);
-                });
               },
               child: const Text('Create Recipe'),
             ),
@@ -186,44 +195,53 @@ class _UserProfilePageState extends State<UserProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile section
+            // profil
             Center(
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.grey[300],
-                    child: const Icon(
-                      Icons.account_circle,
-                      size: 60,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Username', // Replace with actual username if needed
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _showCreateRecipeDialog,
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                    ),
-                    child: const Text(
-                      '+ Create Recipe',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+              child: FutureBuilder<List<Profile>>(
+                future: _userProfiles,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No profile data available.'));
+                  } else {
+                    final profile = snapshot.data!.first;
+                    return Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: AssetImage('assets/default_profile_picture.png'),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          profile.username,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _showCreateRecipeDialog,
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                          ),
+                          child: const Text(
+                            '+ Create Recipe',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                },
               ),
             ),
             const SizedBox(height: 20),
@@ -237,7 +255,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             const SizedBox(height: 10),
             Expanded(
               child: FutureBuilder<List<Recipe>>(
-                future: _userRecipes,
+                future: _databaseHelper.fetchUsersRecipes(currentEmail),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
