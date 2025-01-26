@@ -121,6 +121,29 @@ class DatabaseHelper {
       await connection.close();
     }
   }
+
+    Future<List<Recipe>> fetchUsersRecipes(String userEmail) async {
+    final connection = await connect();
+    try {
+      final results = await connection.query(
+        'SELECT SifraRecepta, NazivRecepta, OpisRecepta, OznakeRecepta FROM Recept WHERE EmailKorisnika = ?',
+        [userEmail],
+      );
+
+      return results.map((row) {
+        return Recipe(
+          id: row['SifraRecepta'] as int,
+          name: row['NazivRecepta'] as String,
+          description: row['OpisRecepta'] as String?,
+          tags: row['OznakeRecepta'] as String?,
+        );
+      }).toList();
+    } finally {
+      await connection.close();
+    }
+  }
+
+
 }
 
 class Recipe {

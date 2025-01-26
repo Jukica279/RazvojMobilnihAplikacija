@@ -2,22 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:dailyflow/widgets/navigationBar.dart';
 import 'package:dailyflow/database/database.dart';
 
+
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
 
   @override
-  _UserProfilePageState createState() => _UserProfilePageState();}
+  _UserProfilePageState createState() => _UserProfilePageState();
+}
 
 class _UserProfilePageState extends State<UserProfilePage> {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
-  late Future<List<Profile>> _userProfiles;
+  late Future<List<Recipe>> _userRecipes;
   String currentEmail = 'user1@gmail.com';
 
-  // Postavljanje pocetnog profila za User 1
   @override
   void initState() {
     super.initState();
-    _userProfiles = _databaseHelper.fetchProfile(currentEmail);
+    _userRecipes = _databaseHelper.fetchUsersRecipes(currentEmail);
   }
 
   void _showSwitchUserDialog() {
@@ -60,13 +61,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 bool isValidUser = await _databaseHelper.switchUser(username, password);
 
                 Navigator.pop(context);
-                //dohvat i provjera unesenog racuna
+
                 if (isValidUser) {
                   final userProfiles = await _databaseHelper.fetchUsers(username);
                   if (userProfiles.isNotEmpty) {
                     setState(() {
                       currentEmail = userProfiles.first.mail;
-                      _userProfiles = _databaseHelper.fetchProfile(currentEmail);
+                      _userRecipes = _databaseHelper.fetchUsersRecipes(currentEmail);
                     });
                   }
                 } else {
@@ -79,7 +80,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
           ],
         );
-},);}
+      },
+    );
+  }
 
   void _showCreateRecipeDialog() {
     final nazivReceptaController = TextEditingController();
@@ -148,6 +151,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         : 'Failed to create recipe.'),
                   ),
                 );
+
+                // Refresh the recipes
+                setState(() {
+                  _userRecipes = _databaseHelper.fetchUsersRecipes(currentEmail);
+                });
               },
               child: const Text('Create Recipe'),
             ),
@@ -175,70 +183,89 @@ class _UserProfilePageState extends State<UserProfilePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: FutureBuilder<List<Profile>>(
-          future: _userProfiles,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No data available.'));
-            } else {
-              final profile = snapshot.data!.first;
-              return Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Profile section
+            Center(
+              child: Column(
                 children: [
-                  Positioned(
-                    top: MediaQuery.of(context).size.height * 0.1,
-                    left: 0,
-                    right: 0,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.grey[300],
-                          child: const Icon(
-                            Icons.account_circle,
-                            size: 60,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          profile.username,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.grey[300],
+                    child: const Icon(
+                      Icons.account_circle,
+                      size: 60,
+                      color: Colors.white,
                     ),
                   ),
-                  Positioned(
-                    top: MediaQuery.of(context).size.height * 0.3,
-                    left: 0,
-                    right: 0,
-                    child: ElevatedButton(
-                      onPressed: _showCreateRecipeDialog,
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                      ),
-                      child: const Text(
-                        '+ Create Recipe',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Username', // Replace with actual username if needed
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _showCreateRecipeDialog,
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                    ),
+                    child: const Text(
+                      '+ Create Recipe',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                 ],
-              );
-            }
-          },
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Your Recipes',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: FutureBuilder<List<Recipe>>(
+                future: _userRecipes,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No recipes available.'));
+                  } else {
+                    final recipes = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: recipes.length,
+                      itemBuilder: (context, index) {
+                        final recipe = recipes[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: ListTile(
+                            title: Text(recipe.name),
+                            subtitle: Text(recipe.description ?? ''),
+                            trailing: Text(recipe.tags ?? ''),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: const CustomNavigationBar(
