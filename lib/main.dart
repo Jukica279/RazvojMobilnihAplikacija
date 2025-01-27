@@ -35,7 +35,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final DatabaseHelper _databaseHelper = DatabaseHelper();
-  final Map<int, bool> _showComments = {};
   late Future<List<Recipe>> _recipesFuture;
   String currentEmail = '';
 
@@ -69,11 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _toggleVisibility(int recipeId) {
-    setState(() {
-      _showComments[recipeId] = !(_showComments[recipeId] ?? false);
-    });
-  }
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -179,24 +174,42 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                     ),
                                     IconButton(
-                                      icon: Icon(Icons.comment_outlined),
-                                      onPressed: currentEmail.isEmpty
-                                          ? null
-                                          : () {
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) =>
-                                                    CommentDialog(
-                                                  recipe: recipe,
-                                                  userEmail: currentEmail,
-                                                  onAddComment: (comment) {
-                                                    _addComment(
-                                                        recipe, comment);
-                                                  },
-                                                ),
-                                              );
-                                            },
-                                    ),
+                                        icon: Icon(Icons.comment_outlined),
+                                              onPressed: () {
+                                                if (currentEmail.isEmpty) {
+                                                  // Prikaz poruke korisniku da se mora ulogovati
+                                                  showDialog(
+                                                    context: context,
+                                                    builder: (context) => AlertDialog(
+                                                    title: const Text('Niste ulogirani'),
+                                                    content: const Text(
+                                                    'Morate se prvo ulogirati kako biste mogli komentirati recept.'),
+                                                    actions: [
+                                                    TextButton(
+                                                    onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                            },
+                                                    child: const Text('U redu'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Prikaz dijaloga za dodavanje komentara
+      showDialog(
+        context: context,
+        builder: (context) => CommentDialog(
+          recipe: recipe,
+          userEmail: currentEmail,
+          onAddComment: (comment) {
+            _addComment(recipe, comment);
+          },
+        ),
+      );
+    }
+  },
+),
+
                                   ],
                                 ),
                               ],
