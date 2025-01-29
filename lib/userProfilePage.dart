@@ -40,7 +40,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   // popup za promjenu korisnika
   void _showSwitchUserDialog() {
-    final emailController = TextEditingController();
+    final usernameController = TextEditingController();
     final passwordController = TextEditingController();
 
     showDialog(
@@ -52,7 +52,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                controller: emailController,
+                controller: usernameController,
                 decoration: const InputDecoration(labelText: 'Username'),
               ),
               TextField(
@@ -69,7 +69,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                final username = emailController.text;
+                final username = usernameController.text;
                 final password = passwordController.text;
 
                 bool isValidUser = await _databaseHelper.switchUser(username, password);
