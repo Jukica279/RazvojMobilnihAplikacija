@@ -72,22 +72,26 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 final username = emailController.text;
                 final password = passwordController.text;
 
-                bool isValidUser = await _databaseHelper.switchUser(username, password);
+                bool isValidUser =
+                    await _databaseHelper.switchUser(username, password);
 
                 Navigator.pop(context);
 
                 if (isValidUser) {
-                  final userProfiles = await _databaseHelper.fetchUsers(username);
+                  final userProfiles =
+                      await _databaseHelper.fetchUsers(username);
                   if (userProfiles.isNotEmpty) {
                     setState(() {
                       currentEmail = userProfiles.first.mail;
                       _saveCurrentUser(currentEmail);
-                      _userProfiles = _databaseHelper.fetchProfile(currentEmail);
+                      _userProfiles =
+                          _databaseHelper.fetchProfile(currentEmail);
                     });
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invalid username or password')),
+                    const SnackBar(
+                        content: Text('Invalid username or password')),
                   );
                 }
               },
@@ -119,7 +123,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ),
               TextField(
                 controller: opisReceptaController,
-                decoration: const InputDecoration(labelText: 'Recipe Description'),
+                decoration:
+                    const InputDecoration(labelText: 'Recipe Description'),
                 maxLines: 3,
               ),
               TextField(
@@ -139,15 +144,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 final opisRecepta = opisReceptaController.text;
                 final oznakeRecepta = oznakeReceptaController.text;
 
-                if (nazivRecepta.isEmpty || opisRecepta.isEmpty || oznakeRecepta.isEmpty) {
+                if (nazivRecepta.isEmpty ||
+                    opisRecepta.isEmpty ||
+                    oznakeRecepta.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill in all the fields.')),
+                    const SnackBar(
+                        content: Text('Please fill in all the fields.')),
                   );
                   return;
                 }
 
                 final prefs = await SharedPreferences.getInstance();
-                final currentEmail = prefs.getString('currentEmail') ?? 'user1@gmail.com';
+                final currentEmail =
+                    prefs.getString('currentEmail') ?? 'user1@gmail.com';
 
                 bool success = await _databaseHelper.insertRecipe(
                   nazivRecepta,
@@ -205,14 +214,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No profile data available.'));
+                    return const Center(
+                        child: Text('No profile data available.'));
                   } else {
                     final profile = snapshot.data!.first;
                     return Column(
                       children: [
                         CircleAvatar(
                           radius: 50,
-                          backgroundImage: AssetImage('assets/default_profile_picture.png'),
+                          backgroundImage:
+                              AssetImage('assets/default_profile_picture.png'),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -223,12 +234,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        Text(profile.preferences),
+                        const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _showCreateRecipeDialog,
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
                             backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 50, vertical: 12),
                           ),
                           child: const Text(
                             '+ Create Recipe',
@@ -282,7 +296,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   }
                 },
               ),
-            ),
+            ),            
           ],
         ),
       ),

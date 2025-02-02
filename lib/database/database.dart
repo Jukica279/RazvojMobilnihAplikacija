@@ -76,12 +76,13 @@ class DatabaseHelper {
     final connection = await connect();
     try {
       final results = await connection.query(
-          'SELECT KorisnickoIme, EmailKorisnika FROM KORISNIK WHERE EmailKorisnika = ?',
+          'SELECT KorisnickoIme, EmailKorisnika,PreferencijeKorisnika FROM KORISNIK WHERE EmailKorisnika = ?',
           [email]);
       return results.map((row) {
         return Profile(
           mail: row['EmailKorisnika'] as String,
           username: row['KorisnickoIme'] as String,
+          preferences: row['PreferencijeKorisnika'] as String,
         );
       }).toList();
     } finally {
@@ -174,7 +175,8 @@ class User {
 class Profile {
   final String username;
   final String mail;
-  Profile({required this.username, required this.mail});
+  final String preferences;
+  Profile({required this.username, required this.mail, required this.preferences});
 }
 
 class Comment {
