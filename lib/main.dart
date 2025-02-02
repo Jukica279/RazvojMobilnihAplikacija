@@ -68,27 +68,22 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
- 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home Page'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setString('currentEmail', '');
-              setState(() {
-                currentEmail = '';
-              });
-            },
-          ),
-        ],
-      ),
+      appBar:
+          AppBar(title: const Text('Home Page'), centerTitle: true, actions: [
+        IconButton(
+          icon: Icon(Icons.logout),
+          onPressed: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('currentEmail', '');
+            setState(() {
+              currentEmail = '';
+            });
+          },
+        ),
+      ]),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -131,11 +126,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           );
                         },
-                        child: Card(
+                        child:  Card(
                           margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
+                          child: Padding(padding: const EdgeInsets.all(12.0),
+                          child: Column(                              
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
@@ -174,48 +168,49 @@ class _MyHomePageState extends State<MyHomePage> {
                                       },
                                     ),
                                     IconButton(
-                                        icon: Icon(Icons.comment_outlined),
-                                              onPressed: () {
-                                                if (currentEmail.isEmpty) {
-                                                  // Prikaz poruke korisniku da se mora ulogovati
-                                                  showDialog(
-                                                    context: context,
-                                                    builder: (context) => AlertDialog(
-                                                    title: const Text('Niste ulogirani'),
-                                                    content: const Text(
-                                                    'Morate se prvo ulogirati kako biste mogli komentirati recept.'),
-                                                    actions: [
-                                                    TextButton(
-                                                    onPressed: () {
+                                      icon: Icon(Icons.comment_outlined),
+                                      onPressed: () {
+                                        if (currentEmail.isEmpty) {
+                                          // Prikaz poruke korisniku da se mora ulogirati
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              title:
+                                                  const Text('Niste ulogirani'),
+                                              content: const Text(
+                                                  'Morate se prvo ulogirati kako biste mogli komentirati recept.'),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
                                                     Navigator.of(context).pop();
-                                                            },
-                                                    child: const Text('U redu'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // Prikaz dijaloga za dodavanje komentara
-      showDialog(
-        context: context,
-        builder: (context) => CommentDialog(
-          recipe: recipe,
-          userEmail: currentEmail,
-          onAddComment: (comment) {
-            _addComment(recipe, comment);
-          },
-        ),
-      );
-    }
-  },
-),
-
+                                                  },
+                                                  child: const Text('U redu'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        } else {
+                                          // Prikaz dijaloga za dodavanje komentara
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) => CommentDialog(
+                                              recipe: recipe,
+                                              userEmail: currentEmail,
+                                              onAddComment: (comment) {
+                                                _addComment(recipe, comment);
+                                              },
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
                                   ],
                                 ),
                               ],
-                            ),
-                          ),
-                        ),
+                            ),),
+                        )
+                          
+                        
                       );
                     },
                   );
