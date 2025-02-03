@@ -220,10 +220,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     final profile = snapshot.data!.first;
                     return Column(
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 50,
                           backgroundImage:
-                              AssetImage('assets/default_profile_picture.png'),
+                              AssetImage('assets/default_profile_picture.jpg'),
                         ),
                         const SizedBox(height: 16),
                         Text(
