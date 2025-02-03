@@ -233,9 +233,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Text(profile.preferences),
-                        const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _showCreateRecipeDialog,
                           style: ElevatedButton.styleFrom(
